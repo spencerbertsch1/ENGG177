@@ -17,7 +17,7 @@ it will yield realistic results when used in the provided backward induction alg
 import numpy as np
 
 # Function to generate an arbitrary MDP
-def random_MDP(n_T, n_S, n_A, r_min, r_max, seed=0):
+def options_MDP(n_T, n_S, n_A, r_min, r_max, seed=0):
 
     #This function generates random parameters for a finite horizon MDP
 
