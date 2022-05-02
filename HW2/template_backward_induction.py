@@ -5,6 +5,8 @@
 # Loading packages
 import numpy as np
 from template_mdp import random_MDP
+from spine_mdp import Spine_MDP
+from options_mdp import options_MDP
 
 # Backward induction algorithm function
 def backward_induction(P, r, rterm, discount):
@@ -64,15 +66,24 @@ if __name__ == "__main__":
     # seed = 15
 
     ## Generating Options MDP patameters
-    n_T = 5  # <-- number of total periods (T) - we have 5 days to exercise the option 
-    n_S = 1  # <-- number of states 
+    # n_T = 5  # <-- number of total periods (T) - we have 5 days to exercise the option 
+    # n_S = 1  # <-- number of states 
+    # n_A = 2  # <-- number of actions 2: {axercise option, continue}
+    # r_min = 0  # <-- if (p <= w) when we exercise the option, or (p <= w) when s_t = s_T, then reward = 0
+    # # FUTURE_CAPITAL = CURR_CAPITAL * (1 + INTEREST_RATE) ^ NUM_PERIODS
+    # r_max = 64  # <-- if we get VERY lucky and the stock always goes up then the max reward would be: 50 * (1+0.05)^5 = ~64
+    # seed = 11  # <-- just a random seed to get reproducible results 
+
+    ## Generating Spine MDP patameters
+    n_T = 12  # <-- number of total periods (T) - we have 5 days to exercise the option 
+    n_S = 4  # <-- number of states 
     n_A = 2  # <-- number of actions 2: {axercise option, continue}
     r_min = 0  # <-- if (p <= w) when we exercise the option, or (p <= w) when s_t = s_T, then reward = 0
     # FUTURE_CAPITAL = CURR_CAPITAL * (1 + INTEREST_RATE) ^ NUM_PERIODS
-    r_max = 64  # <-- if we get VERY lucky and the stock always goes up then the max reward would be: 50 * (1+0.05)^5 = ~64
-    seed = 11  # <-- just a random seed to get reproducible results 
+    r_max = 100  # <-- if we get VERY lucky and the stock always goes up then the max reward would be: 50 * (1+0.05)^5 = ~64
+    seed = 13  # <-- just a random seed to get reproducible results 
 
-    P, r, rterm = random_MDP(n_T, n_S, n_A, r_min, r_max, seed)
+    P, r, rterm = Spine_MDP(n_T, n_S, n_A, r_min, r_max, seed)
 
     ## Calculating value functions and policies using backward induction
     Q, v, pi = backward_induction(P, r, rterm, discount=0.97)
