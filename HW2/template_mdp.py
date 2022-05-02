@@ -1,7 +1,6 @@
 # *********************
 # Random MDP Genration
 # *********************
-
 # Loading packages
 import numpy as np
 
@@ -25,7 +24,8 @@ def random_MDP(n_T, n_S, n_A, r_min, r_max, seed=0):
 
     for t in range(n_T):
         for a in range(n_A):
-            np.random.seed(seed); seed += 1  # seeds for pseudo-random number generator
+            np.random.seed(seed); 
+            seed += 1  # seeds for pseudo-random number generator
             TPM = np.random.rand(n_S, n_S)
             TPM = TPM.T/TPM.sum(axis=1)
             P[:, :, t, a] = TPM.T

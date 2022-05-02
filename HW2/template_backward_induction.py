@@ -50,10 +50,31 @@ def backward_induction(P, r, rterm, discount):
 
     return Q, v, pi
 
-# Example
-## Generating random MDP patameters
-n_T = 3; n_S = 4; n_A = 5; r_min = 100; r_max = 200; seed = 15
-P, r, rterm = random_MDP(n_T, n_S, n_A, r_min, r_max, seed)
 
-## Calculating value functions and policies using backward induction
-Q, v, pi = backward_induction(P, r, rterm, discount=0.97)
+# some test code 
+if __name__ == "__main__":
+        
+    # Example
+    ## Generating random MDP patameters
+    # n_T = 3
+    # n_S = 4
+    # n_A = 5
+    # r_min = 100
+    # r_max = 200
+    # seed = 15
+
+    ## Generating Options MDP patameters
+    n_T = 5  # <-- number of total periods (T) - we have 5 days to exercise the option 
+    n_S = 1  # <-- number of states 
+    n_A = 2  # <-- number of actions 2: {axercise option, continue}
+    r_min = 0  # <-- if (p <= w) when we exercise the option, or (p <= w) when s_t = s_T, then reward = 0
+    # FUTURE_CAPITAL = CURR_CAPITAL * (1 + INTEREST_RATE) ^ NUM_PERIODS
+    r_max = 64  # <-- if we get VERY lucky and the stock always goes up then the max reward would be: 50 * (1+0.05)^5 = ~64
+    seed = 11  # <-- just a random seed to get reproducible results 
+
+    P, r, rterm = random_MDP(n_T, n_S, n_A, r_min, r_max, seed)
+
+    ## Calculating value functions and policies using backward induction
+    Q, v, pi = backward_induction(P, r, rterm, discount=0.97)
+
+    print(f'RANDOM MDP: \n Q: {Q}, \n v: {v}, \n pi: {pi}')
