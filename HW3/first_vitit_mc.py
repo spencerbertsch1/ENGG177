@@ -139,21 +139,48 @@ class Env():
 
         # initialize parameters: 
         Ns: int = 0
-        N: int= 5 # <-- later set to 500 ! 
-        gs: dict = {'s1': 0, 's2': 0, 's3': 0, 's4': 0}
+        N: int= 500 # <-- later set to 500 ! 
+        gs: dict = {1: 0, 2: 0, 3: 0, 4: 0}
+        v_hat_pi: dict = {1: 0, 2: 0, 3: 0, 4: 0}
 
         # what should the value of T be? 
         T = 50
 
-        
         for n in range(N):
 
+            visited_states: dict = {1: False, 2: False, 3: False, 4: False}
+
+            # we move forward from t=0 to t=T to generate the episode data
             episode_results: dict = {}
             for t in range(T):
                 reward = self.state
                 episode_results[t] = [self.state, self.action, reward]
 
-            # TODO finish this! 
+            G = 0
+            # we now move backward from t=T to t=0 to find all the problem parameters
+            for t in range(T-1, 0, -1):
+                # get the reward from the episode results
+                state_t = episode_results[t][0]
+                action_t = episode_results[t][1]
+                reward_t = episode_results[t][2]
+                
+                # update G
+                G = (self.discount_rate * G) + reward_t
+
+                if visited_states[state_t] is False: 
+                    # this is the first time we have visited this state in this episode! 
+
+                    # update Ns and gs
+                    Ns = Ns + 1
+                    gs[state_t] = gs[state_t] + G
+
+                    # update v_hat of state s
+                    v_hat_pi[state_t] = gs[state_t]/Ns
+
+                    # set this state to visited
+                    visited_states[state_t] = True
+
+        print(v_hat_pi)
 
 # some test code
 if __name__ == "__main__":
