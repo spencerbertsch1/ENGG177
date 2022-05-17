@@ -20,7 +20,7 @@ class Env():
 
     def __init__(self):
         self.transition_matrix = self.create_transition_matrix()
-        self.state = 1  # <-- initialize state to 1
+        self.state = random.choice([1, 2, 3, 4])  # <-- initialize to random state in the system
         self.action = True  # <-- here True represents "stay", False represents "leave"
         self.discount_rate = 0.9
 
@@ -32,6 +32,18 @@ class Env():
         for i in range(50):
             env.update_state()
             print(f' ------------------------- NEW STATE = {env.state} ------------------------- ')
+
+
+    def create_transition_matrix(self) -> np.array:
+        """
+        Utility function that returns the transition probability matrix
+        """
+        mat: np.array = np.array([[0.3, 0.4, 0.2, 0.1],  
+                                  [0.2, 0.3, 0.5, 0.0], 
+                                  [0.1, 0.0, 0.8, 0.1], 
+                                  [0.4, 0.0, 0.0, 0.6]], np.float64)
+
+        return mat
 
 
     def step_using_probs(self) -> int:
@@ -102,23 +114,48 @@ class Env():
                         self.state = k
 
         else:
-            # here we set the state to 0 - an absorbing state, the game is over
-            self.state = 0
+            # here we set the state to 20 - an absorbing state, the game is over
+            self.state = 20
 
-
-
-    def create_transition_matrix(self) -> np.array:
+    
+    def get_next_action(self):
         """
-        Utility function that returns the transition probability matrix
+        Get the next action given the current state
+
+        s_t --> a_t
         """
-        mat: np.array = np.array([[0.3, 0.4, 0.2, 0.1],  
-                                  [0.2, 0.3, 0.5, 0.0], 
-                                  [0.1, 0.0, 0.8, 0.1], 
-                                  [0.4, 0.0, 0.0, 0.6]], np.float64)
 
-        return mat
+        # TODO here we need to implement the logic that uses the policy (pi) to get the next action! 
+        next_action: bool = True
 
+        self.action = next_action
+
+
+
+    def first_visit_mc(self):
+        """
+        First visit MC algorithm implementation
+        """
+
+        # initialize parameters: 
+        Ns: int = 0
+        N: int= 5 # <-- later set to 500 ! 
+        gs: dict = {'s1': 0, 's2': 0, 's3': 0, 's4': 0}
+
+        # what should the value of T be? 
+        T = 50
+
+        
+        for n in range(N):
+
+            episode_results: dict = {}
+            for t in range(T):
+                reward = self.state
+                episode_results[t] = [self.state, self.action, reward]
+
+            # TODO finish this! 
 
 # some test code
 if __name__ == "__main__":
     env = Env()
+    env.first_visit_mc()
