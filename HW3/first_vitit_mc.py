@@ -21,6 +21,7 @@ class Env():
     def __init__(self):
         self.transition_matrix = self.create_transition_matrix()
         self.state = 1  # <-- initialize state to 1
+        self.action = True  # <-- here True represents "stay", False represents "leave"
 
     def get_next_state(self):
         """
@@ -29,18 +30,25 @@ class Env():
         p(s(t+1)|st, at)
         """
 
-        t_mat: np.array = self.transition_matrix.copy()
+        if self.action:
 
-        # get the row of transition probabilities for the current state 
-        prob_list: list = list(t_mat[(self.state-1), :])
+            t_mat: np.array = self.transition_matrix.copy()
 
-        # round the elements of the list 
-        prob_list = [round(prob, 2) for prob in prob_list]
+            # get the row of transition probabilities for the current state 
+            prob_list: list = list(t_mat[(self.state-1), :])
 
-        # define the new state given the probabilities from the transition matrix
-        new_state = np.random.choice([1, 2, 3, 4], p=prob_list)      
+            # round the elements of the list 
+            prob_list = [round(prob, 2) for prob in prob_list]
 
-        self.state = new_state
+            # define the new state given the probabilities from the transition matrix
+            new_state = np.random.choice([1, 2, 3, 4], p=prob_list)      
+
+            self.state = new_state
+
+        else:
+            # here we set the state to 0 - an absorbing state, the game is over
+            self.state = 0
+
 
 
     def create_transition_matrix(self) -> np.array:
