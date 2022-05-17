@@ -14,7 +14,6 @@ This file can be run from the command line by running: $ python3 first_visit_mc.
 """
 
 import numpy as np
-import random
 
 class Env():
 
