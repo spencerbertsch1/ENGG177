@@ -103,11 +103,6 @@ class Env():
             t_mat: np.array = self.transition_matrix.copy()
             si: int = self.state
 
-            # state_transition_vector = t_mat[si-1, :]
-            # cum_prob = state_transition_vector.cumsum(axis=0)
-
-            # # print((u < cum_prob).argmax(axis=0))
-            # we now need to find p(s_1|s_i, a_1), which at this point is p(s_1|s_i) because we know a = a_1
             prob_s1_given_si: float = t_mat[(si-1), 1]
 
             if U <= prob_s1_given_si:
@@ -154,7 +149,7 @@ class Env():
         """
 
         # define the number of episodes
-        N: int= 500 # <-- later set to 500 ! 
+        N: int = 500 # <-- later set to 500 ! 
 
         """
         Rows: states
