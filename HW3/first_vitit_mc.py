@@ -103,6 +103,10 @@ class Env():
             t_mat: np.array = self.transition_matrix.copy()
             si: int = self.state
 
+            # state_transition_vector = t_mat[si-1, :]
+            # cum_prob = state_transition_vector.cumsum(axis=0)
+
+            # # print((u < cum_prob).argmax(axis=0))
             # we now need to find p(s_1|s_i, a_1), which at this point is p(s_1|s_i) because we know a = a_1
             prob_s1_given_si: float = t_mat[(si-1), 1]
 
@@ -167,9 +171,6 @@ class Env():
         g_sa: np.array = np.full((5, 2), 0)
         Q_hat_sa: np.array = np.full((5, 2), 0)
 
-        # what should the value of T be? 
-        T = 50
-
         for n in range(1, N, 1):
             if self.verbose:
                 print(f'\n \n \n EPISODE #: {n}')
@@ -179,7 +180,7 @@ class Env():
 
             # we move forward from t=0 to t=T to generate the episode data
             episode_results: dict = {}
-            for t in range(T):
+            for t in range(1000000):
                 self.get_next_state()
                 action: bool = self.action
                 state: int = self.state
