@@ -142,23 +142,6 @@ class Env():
                 print('We\'re in state 5, continuing.')
             else:
                 pass
-
-    
-    def get_next_action(self):
-        """
-        Get the next action given the current state
-
-        s_t --> a_t
-        """
-
-        rand_num: float = random.uniform(0, 1)
-
-        one_minus_epsilon: float = 1 - self.epsilon
-
-        if rand_num <= one_minus_epsilon:
-            self.action = self.a_star
-        else:
-            self.action = not self.a_star
     
 
     def on_policy_first_visit_mcc(self):
