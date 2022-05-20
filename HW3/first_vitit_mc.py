@@ -188,6 +188,9 @@ class Env():
         T = 50
 
         for n in range(1, N, 1):
+            if self.verbose:
+                print(f'\n \n \n EPISODE #: {n}')
+                print(f'Q_hat_sa: {Q_hat_sa}')
 
             visited_states: np.array = np.full((5, 2), False)
 
@@ -253,7 +256,9 @@ class Env():
             if self.verbose: 
                 print(f'New Policy: {self.pi}')
             
+        print(f'Solution for On-Policy First Visit MCC Algorithm after {N} episodes:')
         print(f'Final Policy Pi: \n {np.around(self.pi, decimals=3)}')
+        print(f'Final Q Hat: \n {np.around(Q_hat_sa, decimals=3)}')
         
 
 # some test code
