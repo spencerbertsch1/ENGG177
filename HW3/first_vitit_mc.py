@@ -7,7 +7,7 @@
 | Spencer Bertsch                    |
 --------------------------------------
 
-This file contains the code needed to build an environment representing a 4 state MDP and find an 
+This file contains the code needed to build an environment representing a 5 state MDP and find an 
 approximately optimal policy using an on-policy first-visit MC control algorithm. 
 
 This file can be run from the command line by running: $ python3 first_visit_mc.py
@@ -21,8 +21,11 @@ class Env():
     def __init__(self):
         self.transition_matrix = self.create_transition_matrix()
         self.state = random.choice([1, 2, 3, 4])  # <-- initialize to random state in the system
-        self.action = True  # <-- here True represents "stay", False represents "leave"
-        self.discount_rate = 0.9
+        self.action = 0  # <-- here 0 represents "stay", 1 represents "leave"
+        self.lamda = 0.9  # <-- discount rate of 0.9
+        self.epsilon = 1
+        self.a_star = np.zeros(5)  # <-- we initialize the 'best action' a_star to 0 or "stay"
+        self.pi = np.full((5, 2), np.nan)
 
 
     def check_env(self):
@@ -30,8 +33,9 @@ class Env():
         Small utility function to check that the transition function is working properly
         """
         for i in range(50):
-            env.update_state()
-            print(f' ------------------------- NEW STATE = {env.state} ------------------------- ')
+            env.get_next_state()
+            s = '-'*20
+            print(f' {s} NEW STATE = {env.state} {s} ')
 
 
     def create_transition_matrix(self) -> np.array:
@@ -71,12 +75,22 @@ class Env():
         return new_state
 
 
-    def update_state(self):
+    def get_next_state(self):
         """
         A function that can be used to get the next state given a current state and an action
+
+        TODO 
+        prob = np.array([0.025, 0.025, 0.95])
+        cum_prob = prob.cumsum(axis=0)
+        u = np.random.uniform()
+        print((u < cum_prob).argmax(axis=0))
+
+        np.random.choice(np.arange(pi.shape[1]), p=pi[s[-1], :])
         """
 
-        if self.action:
+        choice = np.random.choice([0.95, 0.025, 0.025])
+
+        if self.action == 0:
 
             # define the value of U drawn from a uniform distribution between 0 and 1, [0, 1]. 
             U = np.random.uniform(1,0)
@@ -125,36 +139,56 @@ class Env():
         s_t --> a_t
         """
 
-        # TODO here we need to implement the logic that uses the policy (pi) to get the next action! 
-        next_action: bool = True
+        rand_num: float = random.uniform(0, 1)
 
-        self.action = next_action
+        one_minus_epsilon: float = 1 - self.epsilon
 
-
+        if rand_num <= one_minus_epsilon:
+            self.action = self.a_star
+        else:
+            self.action = not self.a_star
+    
 
     def first_visit_mc(self):
         """
         First visit MC algorithm implementation
         """
 
-        # initialize parameters: 
-        Ns: int = 0
+        # define the number of episodes
         N: int= 500 # <-- later set to 500 ! 
-        gs: dict = {1: 0, 2: 0, 3: 0, 4: 0}
-        v_hat_pi: dict = {1: 0, 2: 0, 3: 0, 4: 0}
+
+        """
+        Rows: states
+        Cols: Actions
+        --------------
+        |s1_a1, s1_a2|
+        |s2_a1, s2_a2|
+        |s3_a1, s3_a2|
+        |s4_a1, s4_a2|
+        |s5_a1, s5_a2|
+        --------------
+        """
+        N_sa: np.array = np.full((5, 2), 0)
+        g_sa: np.array = np.full((5, 2), 0)
+        Q_hat_sa: np.array = np.full((5, 2), 0)
+
 
         # what should the value of T be? 
         T = 50
 
-        for n in range(N):
+        for n in range(1, N, 1):
 
-            visited_states: dict = {1: False, 2: False, 3: False, 4: False}
+            visited_states: np.array = np.full((5, 2), False)
 
             # we move forward from t=0 to t=T to generate the episode data
             episode_results: dict = {}
             for t in range(T):
-                reward = self.state
-                episode_results[t] = [self.state, self.action, reward]
+                self.get_next_state()
+                action: bool = self.action
+                state: int = self.state
+                reward: int = self.state
+                print(f'Time: {t}, State: {state}, Action: {action}, Reward: {reward}')
+                episode_results[t] = [state, action, reward]
 
             G = 0
             # we now move backward from t=T to t=0 to find all the problem parameters
@@ -165,22 +199,36 @@ class Env():
                 reward_t = episode_results[t][2]
                 
                 # update G
-                G = (self.discount_rate * G) + reward_t
+                G = (self.lamda * G) + reward_t
 
-                if visited_states[state_t] is False: 
+                if not visited_states[state_t][action_t]: 
+                    print(f'First time visiting state {state_t} in episode {n}!')
                     # this is the first time we have visited this state in this episode! 
 
                     # update Ns and gs
-                    Ns = Ns + 1
-                    gs[state_t] = gs[state_t] + G
+                    N_sa[state_t][action_t] = N_sa[state_t][action_t] + 1
+                    g_sa[state_t][action_t] = g_sa[state_t][action_t] + G
 
-                    # update v_hat of state s
-                    v_hat_pi[state_t] = gs[state_t]/Ns
+                    # update Q_hat_sa
+                    Q_hat_sa[state_t][action_t] = g_sa[state_t][action_t] / N_sa[state_t][action_t]
 
                     # set this state to visited
-                    visited_states[state_t] = True
+                    visited_states[state_t][action_t] = True
 
-        print(v_hat_pi)
+                self.a_star = np.argmax(Q_hat_sa, axis=1) # <-- get the action that maximizes Q_hat_sa here! 
+                    
+
+            # we perform these operations on every iteration of the episode n
+            self.epsilon = 1/n
+
+            # we now update the 
+            for state in range(Q_hat_sa.shape[0]):
+                self.pi[state][self.a_star[state]] = 1 - self.epsilon
+                other_action = 1 - self.a_star[state]
+                self.pi[state][other_action] = self.epsilon
+            
+            print('something')
+
 
 # some test code
 if __name__ == "__main__":
