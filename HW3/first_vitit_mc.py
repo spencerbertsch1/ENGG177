@@ -8,7 +8,7 @@
 --------------------------------------
 
 This file contains the code needed to build an environment representing a 5 state MDP and find an 
-approximately optimal policy using an on-policy first-visit MC control algorithm. 
+approximately optimal policy using an off-policy first-visit MC control algorithm. 
 
 This file can be run from the command line by running: $ python3 first_visit_mc.py
 """
@@ -45,6 +45,8 @@ class Env():
     def create_transition_matrix(self) -> np.array:
         """
         Utility function that returns the transition probability matrix
+
+        :return: nd.array representing the transition probability matrix 
         """
         mat: np.array = np.array([[0.3, 0.4, 0.2, 0.1],  
                                   [0.2, 0.3, 0.5, 0.0], 
@@ -83,13 +85,7 @@ class Env():
         """
         A function that can be used to get the next state given a current state and an action
 
-        TODO 
-        prob = np.array([0.025, 0.025, 0.95])
-        cum_prob = prob.cumsum(axis=0)
-        u = np.random.uniform()
-        print((u < cum_prob).argmax(axis=0))
-
-        np.random.choice(np.arange(pi.shape[1]), p=pi[s[-1], :])
+        :return: NA - returns nothing, only updates instance variables
         """
 
         # here we want to sample pi to get the next action
