@@ -20,7 +20,7 @@ random.seed = 42
 class Env():
 
     # define class variables
-    verbose = False  # <-- set to true to see all the detailed outputs
+    verbose = True  # <-- set to true to see all the detailed outputs
 
     def __init__(self):
         self.transition_matrix = self.create_transition_matrix()
@@ -145,7 +145,7 @@ class Env():
         """
 
         # define the number of episodes
-        N: int = 500 # <-- later set to 500 ! 
+        N: int = 25 # <-- later set to 500 ! 
 
         """
         Rows: states
@@ -158,16 +158,18 @@ class Env():
         |s5_a1, s5_a2|
         --------------
         """
+        C_sa: np.array = np.full((5, 2), 0)
+        Q_hat_sa: np.array = np.full((5, 2), 0)
+        self.pi[:, 1] = np.argmax(Q_hat_sa, axis=1) 
+        self.pi[:, 0] = 1 - self.pi[:, 1]
+
         N_sa: np.array = np.full((5, 2), 0)
         g_sa: np.array = np.full((5, 2), 0)
-        Q_hat_sa: np.array = np.full((5, 2), 0)
 
         for n in range(1, N, 1):
             if self.verbose:
                 print(f'\n \n \n EPISODE #: {n}')
                 print(f'Q_hat_sa: {Q_hat_sa}')
-
-            visited_states: np.array = np.full((5, 2), False)
 
             # we move forward from t=0 to t=T to generate the episode data
             episode_results: dict = {}
@@ -188,45 +190,42 @@ class Env():
                     self.state = np.random.choice([1, 2, 3, 4])
                     break
 
+            W = 1
             G = 0
             if self.verbose: 
                 print(f'Current Episode: {episode_results}')
+            
             # we now move backward from t=T to t=0 to find all the problem parameters
             episode_length: int = max([k for k, _ in episode_results.items()])
             for t in range(episode_length, 0, -1):
-                # get the reward from the episode results
-                state_t = episode_results[t][0]
-                action_t = episode_results[t][1]
-                reward_t = episode_results[t][2]
-                
-                # update G
-                G = (self.lamda * G) + reward_t
+                while W != 0: 
 
-                if not visited_states[state_t-1][action_t]: 
-                    if self.verbose:
-                        print(f'First time visiting state {state_t} in episode {n}!')
-                    # this is the first time we have visited this state in this episode! 
+                    # get the reward from the episode results
+                    state_t = episode_results[t][0]
+                    action_t = episode_results[t][1]
+                    reward_t = episode_results[t][2]
+                    
+                    # update G
+                    G = (self.lamda * G) + reward_t
 
-                    # update Ns and gs
-                    N_sa[state_t-1][action_t] = N_sa[state_t-1][action_t] + 1
-                    g_sa[state_t-1][action_t] = g_sa[state_t-1][action_t] + G
+                    # update C_sa
+                    C_sa[state_t-1][action_t] = C_sa[state_t-1][action_t] + W
 
                     # update Q_hat_sa
-                    Q_hat_sa[state_t-1][action_t] = g_sa[state_t-1][action_t] / N_sa[state_t-1][action_t]
+                    wcsa = W / C_sa[state_t-1][action_t]
+                    gqsa = G - Q_hat_sa[state_t-1][action_t]
+                    Q_hat_sa[state_t-1][action_t] = Q_hat_sa[state_t-1][action_t] + (wcsa * gqsa)
 
-                    # set this state to visited
-                    visited_states[state_t-1][action_t] = True
+                    # update pi 
+                    self.pi[:, 1] = np.argmax(Q_hat_sa, axis=1) 
+                    self.pi[:, 0] = 1 - self.pi[:, 1]
 
-                self.a_star = np.argmax(Q_hat_sa, axis=1) # <-- get the action that maximizes Q_hat_sa here! 
-                    
-            # we perform these operations on every iteration of the episode n
-            self.epsilon = 1/n
+                    if self.pi[state_t-1][0] == action_t:
+                        continue
+                    else:
+                        # W = W*(1/(self.pi[state_t-1][action_t]))
+                        W = W - 1
 
-            # we now update the 
-            for state in range(Q_hat_sa.shape[0]):
-                self.pi[state][self.a_star[state]] = 1 - self.epsilon
-                other_action = 1 - self.a_star[state]
-                self.pi[state][other_action] = self.epsilon
 
             if self.verbose: 
                 print(f'New Policy: {self.pi}')
